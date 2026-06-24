@@ -1,6 +1,6 @@
 class InventoryItem:
-    def __init__(self, id, name, category, quantity, unit_price, storage_fee):
-        self.id = id
+    def __init__(self, item_id, name, category, quantity, unit_price, storage_fee):
+        self.id = item_id
         self.name = name
         self.category = category
         self.quantity = quantity
@@ -33,211 +33,252 @@ class InventoryManager:
     def __init__(self):
         self.items = []
 
-    def find_by_id(self, id):
+    def find_by_id(self, item_id):
         for item in self.items:
-            if item.id == id:
+            if item.id == item_id:
                 return item
         return None
 
-    # Thêm hàng hóa
+    def show_item_table(self, item):
+        print(
+            f"{item.id:<12}"
+            f"{item.name:<20}"
+            f"{item.category:<20}"
+            f"{item.quantity:<12}"
+            f"{item.unit_price:<15,.0f}"
+            f"{item.storage_fee:<15,.0f}"
+            f"{item.total_inventory_value:<20,.0f}"
+            f"{item.inventory_type}"
+        )
+
     def add_item(self):
-        try:
-            id = input("Nhập mã hàng hóa: ").strip()
+        item_id = input("Nhập mã hàng hóa: ").strip()
 
-            if id == "":
-                print("Mã hàng hóa không được để trống!")
-                return
+        if item_id == "":
+            print("Mã hàng hóa không được rỗng!")
+            return
 
-            if self.find_by_id(id):
-                print("Mã hàng hóa đã tồn tại!")
-                return
+        if self.find_by_id(item_id):
+            print("Mã hàng hóa không được trùng!")
+            return
 
-            name = input("Nhập tên hàng hóa: ").strip()
-            if name == "":
-                print("Tên hàng hóa không được để trống!")
-                return
+        name = input("Nhập tên hàng hóa: ").strip()
+        if name == "":
+            print("Tên hàng hóa không được rỗng!")
+            return
 
-            category = input("Nhập danh mục: ").strip()
-            if category == "":
-                print("Danh mục không được để trống!")
-                return
+        category = input("Nhập danh mục hàng hóa: ").strip()
+        if category == "":
+            print("Danh mục hàng hóa không được rỗng!")
+            return
 
-            quantity = int(input("Nhập số lượng tồn kho: "))
-            if quantity < 0 or quantity > 1000:
-                print("Số lượng phải từ 0 đến 1000!")
-                return
+        quantity = input_quantity()
+        unit_price = input_non_negative_float("Nhập đơn giá nhập: ")
+        storage_fee = input_non_negative_float("Nhập chi phí lưu kho: ")
 
-            unit_price = float(input("Nhập đơn giá nhập: "))
-            if unit_price <= 0:
-                print("Đơn giá phải lớn hơn 0!")
-                return
+        item = InventoryItem(
+            item_id,
+            name,
+            category,
+            quantity,
+            unit_price,
+            storage_fee
+        )
 
-            storage_fee = float(input("Nhập chi phí lưu kho: "))
-            if storage_fee <= 0:
-                print("Chi phí lưu kho phải lớn hơn 0!")
-                return
+        self.items.append(item)
 
-            item = InventoryItem(
-                id,
-                name,
-                category,
-                quantity,
-                unit_price,
-                storage_fee
-            )
+        print("Thêm hàng hóa thành công!")
 
-            self.items.append(item)
-            print("Thêm hàng hóa thành công!")
-
-        except ValueError:
-            print("Dữ liệu nhập không hợp lệ!")
-
-    # Hiển thị danh sách
     def show_all(self):
-        if len(self.items) == 0:
+        if not self.items:
             print("Danh sách hàng hóa đang rỗng!")
             return
 
         print("-" * 150)
         print(
-            f"{'Mã HH':<10}"
+            f"{'Mã hàng hóa':<12}"
             f"{'Tên hàng hóa':<20}"
-            f"{'Danh mục':<15}"
+            f"{'Danh mục':<20}"
             f"{'Số lượng':<12}"
-            f"{'Đơn giá':<15}"
+            f"{'Đơn giá nhập':<15}"
             f"{'Chi phí kho':<15}"
             f"{'Tổng giá trị':<20}"
             f"{'Phân loại'}"
         )
         print("-" * 150)
 
-        for p in self.items:
-            print(
-                f"{p.id:<10}"
-                f"{p.name:<20}"
-                f"{p.category:<15}"
-                f"{p.quantity:<12}"
-                f"{p.unit_price:<15,.0f}"
-                f"{p.storage_fee:<15,.0f}"
-                f"{p.total_inventory_value:<20,.0f}"
-                f"{p.inventory_type}"
-            )
+        for item in self.items:
+            self.show_item_table(item)
 
-    # Cập nhật
     def update_item(self):
-        id = input("Nhập mã hàng hóa cần cập nhật: ").strip()
+        item_id = input(
+            "Nhập mã hàng hóa cần cập nhật: "
+        ).strip()
 
-        item = self.find_by_id(id)
+        item = self.find_by_id(item_id)
 
         if item is None:
-            print("Không tìm thấy hàng hóa!")
+            print("Không tìm thấy hàng hóa cần cập nhật!")
             return
 
-        try:
-            quantity = int(input("Nhập số lượng mới: "))
-            if quantity < 0 or quantity > 1000:
-                print("Số lượng phải từ 0 đến 1000!")
-                return
+        quantity = input_quantity()
+        unit_price = input_non_negative_float(
+            "Nhập đơn giá nhập mới: "
+        )
+        storage_fee = input_non_negative_float(
+            "Nhập chi phí lưu kho mới: "
+        )
 
-            unit_price = float(input("Nhập đơn giá mới: "))
-            if unit_price <= 0:
-                print("Đơn giá phải lớn hơn 0!")
-                return
+        item.quantity = quantity
+        item.unit_price = unit_price
+        item.storage_fee = storage_fee
 
-            storage_fee = float(input("Nhập chi phí lưu kho mới: "))
-            if storage_fee <= 0:
-                print("Chi phí lưu kho phải lớn hơn 0!")
-                return
+        item.calculate_inventory_value()
+        item.classify_inventory()
 
-            item.quantity = quantity
-            item.unit_price = unit_price
-            item.storage_fee = storage_fee
+        print("Cập nhật hàng hóa thành công!")
 
-            item.calculate_inventory_value()
-            item.classify_inventory()
-
-            print("Cập nhật thành công!")
-
-        except ValueError:
-            print("Dữ liệu nhập không hợp lệ!")
-
-    # Xóa
     def delete_item(self):
-        id = input("Nhập mã hàng hóa cần xóa: ").strip()
+        item_id = input(
+            "Nhập mã hàng hóa cần xóa: "
+        ).strip()
 
-        item = self.find_by_id(id)
+        item = self.find_by_id(item_id)
 
         if item is None:
-            print("Không tìm thấy hàng hóa!")
+            print("Không tìm thấy hàng hóa cần xóa!")
             return
 
-        choice = input("Bạn có chắc muốn xóa? (Y/N): ")
+        choice = input(
+            "Bạn có chắc muốn xóa hàng hóa này không? (Y/N): "
+        ).strip()
 
         if choice.lower() == "y":
             self.items.remove(item)
-            print("Xóa thành công!")
-        else:
+            print("Xóa hàng hóa thành công!")
+
+        elif choice.lower() == "n":
             print("Đã hủy thao tác!")
 
-    # Tìm kiếm
-    def search_item(self):
-        keyword = input("Nhập tên hàng hóa cần tìm: ").lower()
+        else:
+            print("Lựa chọn không hợp lệ!")
 
-        found = False
+    def search_item(self):
+        if not self.items:
+            print("Danh sách hàng hóa đang rỗng!")
+            return
+
+        keyword = input(
+            "Nhập tên hoặc danh mục cần tìm: "
+        ).strip().lower()
+
+        found_items = []
 
         for item in self.items:
-            if keyword in item.name.lower():
-                found = True
+            if (
+                keyword in item.name.lower()
+                or keyword in item.category.lower()
+            ):
+                found_items.append(item)
 
-                print("-" * 80)
-                print("Mã hàng hóa:", item.id)
-                print("Tên hàng hóa:", item.name)
-                print("Danh mục:", item.category)
-                print("Số lượng:", item.quantity)
-                print("Đơn giá:", format(item.unit_price, ",.0f"))
-                print("Chi phí kho:", format(item.storage_fee, ",.0f"))
-                print(
-                    "Tổng giá trị:",
-                    format(item.total_inventory_value, ",.0f")
-                )
-                print("Phân loại:", item.inventory_type)
+        if not found_items:
+            print("Không tìm thấy hàng hóa phù hợp!")
+            return
 
-        if not found:
-            print("Không tìm thấy hàng hóa!")
+        print("-" * 150)
+        print(
+            f"{'Mã hàng hóa':<12}"
+            f"{'Tên hàng hóa':<20}"
+            f"{'Danh mục':<20}"
+            f"{'Số lượng':<12}"
+            f"{'Đơn giá nhập':<15}"
+            f"{'Chi phí kho':<15}"
+            f"{'Tổng giá trị':<20}"
+            f"{'Phân loại'}"
+        )
+        print("-" * 150)
+
+        for item in found_items:
+            self.show_item_table(item)
 
 
-# MAIN
-manager = InventoryManager()
+def input_quantity():
+    while True:
+        try:
+            quantity = int(
+                input("Nhập số lượng tồn kho: ")
+            )
 
-while True:
-    print("\n============= MENU =============")
+            if 0 <= quantity <= 100000:
+                return quantity
+
+            print(
+                "Số lượng tồn kho phải từ 0 đến 100000!"
+            )
+
+        except ValueError:
+            print("Vui lòng nhập số nguyên hợp lệ!")
+
+
+def input_non_negative_float(message):
+    while True:
+        try:
+            value = float(input(message))
+
+            if value >= 0:
+                return value
+
+            print("Giá trị không được âm!")
+
+        except ValueError:
+            print("Vui lòng nhập số hợp lệ!")
+
+
+def show_menu():
+    print("\n================ MENU ================")
     print("1. Hiển thị danh sách hàng hóa")
     print("2. Thêm hàng hóa mới")
     print("3. Cập nhật hàng hóa")
     print("4. Xóa hàng hóa")
     print("5. Tìm kiếm hàng hóa")
     print("6. Thoát")
-    print("================================")
+    print("=====================================")
 
-    try:
-        choice = int(input("Nhập lựa chọn: "))
 
-        match choice:
-            case 1:
-                manager.show_all()
-            case 2:
-                manager.add_item()
-            case 3:
-                manager.update_item()
-            case 4:
-                manager.delete_item()
-            case 5:
-                manager.search_item()
-            case 6:
-                print("Cảm ơn bạn đã sử dụng chương trình!")
-                break
-            case _:
-                print("Lựa chọn không hợp lệ!")
+def main():
+    manager = InventoryManager()
 
-    except ValueError:
-        print("Vui lòng nhập số từ 1 đến 6!")
+    while True:
+        show_menu()
+
+        choice = input(
+            "Nhập lựa chọn của bạn: "
+        ).strip()
+
+        if choice == "1":
+            manager.show_all()
+
+        elif choice == "2":
+            manager.add_item()
+
+        elif choice == "3":
+            manager.update_item()
+
+        elif choice == "4":
+            manager.delete_item()
+
+        elif choice == "5":
+            manager.search_item()
+
+        elif choice == "6":
+            print(
+                "Cảm ơn bạn đã sử dụng hệ thống quản lý kho hàng!"
+            )
+            break
+
+        else:
+            print("Lựa chọn menu không hợp lệ!")
+
+
+if __name__ == "__main__":
+    main()
